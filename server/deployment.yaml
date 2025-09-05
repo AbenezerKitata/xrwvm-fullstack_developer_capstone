@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: dealership
+  name: dealership
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: dealership
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        run: dealership
+    spec:
+      containers:
+      - image: us.icr.io/sn-labs-aben4kit/dealership:latest
+        imagePullPolicy: Always
+        name: dealership
+        ports:
+        - containerPort: 8000  # ✅ Correct - matches your Django port
+          protocol: TCP
+        env:  # ✅ Add these environment variables
+        - name: DJANGO_SETTINGS_MODULE
+          value: "djangoproj.settings"
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: DEBUG
+          value: "0"  # Set to 0 in production
+        # Add other environment variables your app needs
+        # - name: DATABASE_URL
+        #   value: "your-database-connection-string"
+      restartPolicy: Always

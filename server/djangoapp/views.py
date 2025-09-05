@@ -133,18 +133,32 @@ def get_dealer_details(request, dealer_id):
 # Create a `add_review` view to submit a review
 # def add_review(request):
 def add_review(request):
-    if request.user.is_anonymous is False:
-        data = json.loads(request.body)
+    if not request.user.is_anonymous:
         try:
-            # response = post_review(data)
-            return JsonResponse({"status": 200})
+            data = json.loads(request.body)
+            
+            # ✅ ACTUALLY CREATE THE REVIEW IN DATABASE
+            review = Review.objects.create(
+                name=data.get('name'),
+                dealership=data.get('dealership'),
+                review=data.get('review'),
+                purchase=data.get('purchase', False),
+                purchase_date=data.get('purchase_date'),
+                car_make=data.get('car_make'),
+                car_model=data.get('car_model'),
+                car_year=data.get('car_year'),
+                sentiment="neutral"  # Default sentiment, you can analyze later
+            )
+            
+            # ✅ Return success with the created review ID
+            return JsonResponse({"status": 200, "review_id": review.id})
+            
         except Exception as err:
             return JsonResponse(
-                {"status": 401, "message": ("Error in posting review: " + str(err))}
+                {"status": 401, "message": f"Error in posting review: {str(err)}"}
             )
     else:
         return JsonResponse({"status": 403, "message": "Unauthorized"})
-
 # Module import
 from .restapis import get_request, analyze_review_sentiments, post_review, searchcars_request
 
